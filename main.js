@@ -2,6 +2,7 @@ import "./style.css";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { Texture, Vector3 } from "three";
+import { distance } from "./utils";
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
@@ -19,7 +20,7 @@ renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputEncoding = THREE.sRGBEncoding;
 
-const basePlane = new THREE.PlaneGeometry(5, 5, 1);
+const basePlane = new THREE.PlaneGeometry(8, 5, 1);
 var baseVectorArray = [];
 var baseVertexPosArray = basePlane.attributes.position.array;
 for (var i = 0; i < baseVertexPosArray.length; i += 3) {
@@ -29,21 +30,13 @@ for (var i = 0; i < baseVertexPosArray.length; i += 3) {
   baseVectorArray.push(new THREE.Vector3(x, y, z));
 }
 
-function createVector(offset, min) {
-  var startVector = new THREE.Vector3(0, 0, 0);
-  startVector.copy(offset);
-  startVector.x = THREE.MathUtils.randFloat(
-    baseVectorArray[0].x + min,
-    baseVectorArray[1].x
-  );
-}
-
 var startVector = new THREE.Vector3(0, 0, 0);
 startVector.copy(baseVectorArray[0]);
 startVector.x = THREE.MathUtils.randFloat(
   baseVectorArray[0].x,
   baseVectorArray[1].x
 );
+
 var endVector = new THREE.Vector3(0, 0, 0);
 endVector.copy(baseVectorArray[3]);
 endVector.x = THREE.MathUtils.randFloat(
@@ -94,7 +87,20 @@ var intersection = lineLineIntersection(
   endVector2
 );
 
-function createPanel(vertex1, vertex2, vertex3, vertex4) {
+function createLine(pos1, pos2) {
+  const lineMat = new THREE.LineBasicMaterial({
+    color: 0x0000ff,
+  });
+
+  const points = [];
+  points.push(pos1);
+  points.push(pos2);
+  const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
+  const line = new THREE.Line(lineGeo, lineMat);
+  scene.add(line);
+}
+
+function createPanel(vertex1, vertex2, vertex3, vertex4, fill) {
   const vertices = new Float32Array([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
   const indices = new Uint16Array([0, 1, 2, 2, 3, 0]);
 
@@ -114,64 +120,81 @@ function createPanel(vertex1, vertex2, vertex3, vertex4) {
   vertices[10] = vertex4.y;
   vertices[11] = vertex4.z;
 
+  const center = [0, 0, 0];
+  for (let i = 0; i < 4; i++) {
+    center[0] += vertices[i * 3];
+    center[1] += vertices[i * 3 + 1];
+    center[2] += vertices[i * 3 + 2];
+  }
+  center[0] /= 4;
+  center[1] /= 4;
+  center[2] /= 4;
+
+  const vectors = [];
+  for (let i = 0; i < vertices.length; i += 3) {
+    const currentPoint = new Vector3(
+      vertices[i],
+      vertices[i + 1],
+      vertices[i + 2]
+    );
+
+    // Get the next point (or the first point if this is the last point)
+    const nextPointIndex = (i + 3) % vertices.length;
+    const nextPoint = new Vector3(
+      vertices[nextPointIndex],
+      vertices[nextPointIndex + 1],
+      vertices[nextPointIndex + 2]
+    );
+
+    // Calculate the vector from the current point to the next point
+    const vector = nextPoint.clone().sub(currentPoint);
+
+    // Add the vector to the array
+    vectors.push(vector);
+  }
+
+  // The vectors array now contains the vectors from each point to the next point in the quadrilateral
+  console.log(vectors);
+  console.log(vectors[0].cross(vectors[1]))
+
+
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
   geometry.setIndex(new THREE.BufferAttribute(indices, 1));
   geometry.computeVertexNormals();
 
   const material = new THREE.MeshBasicMaterial({
-    color: "red",
+    color: fill,
     wireframe: false,
     side: THREE.BackSide,
   });
   const mesh = new THREE.Mesh(geometry, material);
   scene.add(mesh);
+
+  createLine(new THREE.Vector3(center[0], center[1], 0), vertex1);
+  createLine(new THREE.Vector3(center[0], center[1], 0), vertex2);
+  createLine(new THREE.Vector3(center[0], center[1], 0), vertex3);
+  createLine(new THREE.Vector3(center[0], center[1], 0), vertex4);
+
+  createLine(vertex1, vertex2);
+  createLine(vertex2, vertex3);
+  createLine(vertex3, vertex4);
+  createLine(vertex4, vertex1);
 }
 
-createPanel(baseVectorArray[0], startVector, intersection, startVector2);
-createPanel(startVector, baseVectorArray[1], endVector2, intersection);
-createPanel(startVector2, intersection, endVector, baseVectorArray[2]);
-createPanel(intersection, endVector2, baseVectorArray[3], endVector);
+createPanel(baseVectorArray[0], startVector, intersection, startVector2, "red");
+createPanel(startVector, baseVectorArray[1], endVector2, intersection, "green");
+createPanel(
+  startVector2,
+  intersection,
+  endVector,
+  baseVectorArray[2],
+  "yellow"
+);
+createPanel(intersection, endVector2, baseVectorArray[3], endVector, "pink");
 
-const lineMat = new THREE.LineBasicMaterial({
-  color: 0x0000ff,
-});
-
-function randomLine() {
-  var startVector = new THREE.Vector3(0, 0, 0);
-  startVector.copy(baseVectorArray[0]);
-  startVector.x = THREE.MathUtils.randFloat(
-    baseVectorArray[0].x,
-    baseVectorArray[1].x
-  );
-  var endVector = new THREE.Vector3(0, 0, 0);
-  endVector.copy(baseVectorArray[3]);
-  endVector.x = THREE.MathUtils.randFloat(
-    baseVectorArray[2].x,
-    baseVectorArray[3].x
-  );
-
-  const points = [];
-  points.push(startVector);
-  points.push(endVector);
-  const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
-  const line = new THREE.Line(lineGeo, lineMat);
-  scene.add(line);
-}
-
-const points = [];
-points.push(startVector);
-points.push(endVector);
-const lineGeo = new THREE.BufferGeometry().setFromPoints(points);
-const line = new THREE.Line(lineGeo, lineMat);
-scene.add(line);
-
-const points2 = [];
-points2.push(startVector2);
-points2.push(endVector2);
-const lineGeo2 = new THREE.BufferGeometry().setFromPoints(points2);
-const line2 = new THREE.Line(lineGeo2, lineMat);
-scene.add(line2);
+createLine(startVector, endVector);
+createLine(startVector2, endVector2);
 
 /** 
 const geometry = new THREE.PlaneGeometry(4,2.25);
