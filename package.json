@@ -12,6 +12,7 @@
     "vite": "^4.0.0"
   },
   "dependencies": {
+    "earcut": "^2.2.4",
     "three": "^0.149.0"
   }
 }
