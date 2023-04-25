@@ -1,77 +1,102 @@
 @font-face {
   font-family: 'HankenGrotesk';
-  src: url(/HankenGrotesk.ttf);
+  src: url(/fonts/HankenGrotesk.ttf);
+}
+@font-face {
+  font-family: 'Jakarta';
+  src: url(/fonts/PlusJakartaSans-Regular.ttf);
 }
 
 :root {
-  font-family: HankenGrotesk, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
+  font-family: 'HankenGrotesk', Helvetica, Arial, sans-serif;
+  --Text: #f8f8f8;
+  --TextHover: #ddd;
 
-  color-scheme: light dark;
   color: #f8f8f8;
   background-color: #141414;
+}
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+body {
+  padding: 0;
+  margin: 0;
 }
 
 a {
   font-family: 'HankenGrotesk';
-  color: #f8f8f8;
-  text-decoration: inherit;
+  color: var(--Text);
+  text-decoration: none;
 }
 a:hover {
+  color: var(--TextHover);
+}
+
+#navbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 3.5rem 5.5rem;
+}
+
+#navbar a {
+  font-family: 'HankenGrotesk';
+  font-size: 2.7vw;
+  line-height: 0.9;
+}
+
+#navbar p {
+  font-family: 'Jakarta';
+  margin: 0;
+  line-height: 1.5;
+  font-size: 1.3vw;;
+  color: #8B8B8B;
+}
+
+#navbar a:hover {
   color: #ddd;;
 }
 
-body {
+#container {
+  overflow: hidden;
+}
+
+#footer {
+  width: calc(100%);
+  box-sizing: border-box;
+  padding: 0.7rem 5.5rem;
+  border: #3f3f3f;
+  border-width: 1px;
+  border-style: solid;
+  background-color: #1a1a1a;
+}
+
+.breadcrumb {
+  position: absolute;
+  padding: 1.5rem 3.5rem;
+}
+
+.breadcrumb ul {
+  font-family: 'Jakarta';
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  font-size: 1.3rem;
+  text-align: center;
+  color: #8B8B8B;
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  padding: 0;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-#canv {
-  width: 100%;
-}
-
-.navbar {
-  display: flex;
-  justify-content: space-between;
+.breadcrumb li {
+  display: inherit;
   align-items: center;
-  width: 100%;
-  position: fixed;
-  top: 0;
-  left: 0;
 }
 
-.navbar__toggle {
-  display: none;
-  color: #fff;
+.breadcrumb ul a {
   font-size: 1.5rem;
 }
 
-.navbar__menu {
-  display: flex;
-}
-
-.navbar__item {
-  color: #fff;
-  text-decoration: none;
-  padding: 0 1rem;
-}
-
-.navbar__item:hover {
-  color: #ddd;
+.breadcrumb li:not(:last-child)::after {
+  display: inline-block;
+  margin: 0 .55rem;
+  content: "/";
 }

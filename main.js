@@ -17,37 +17,41 @@ camera.position.setZ(5);
 
 scene = new THREE.Scene();
 
+const container = document.getElementById( 'container' );
 renderer = new THREE.WebGLRenderer({
-  canvas: document.querySelector("#canv"),
   alpha: true,
   antialias: true,
 });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.outputEncoding = THREE.LinearEncoding;
+container.appendChild( renderer.domElement );
 
 clock = new THREE.Clock();
 
-const v1 = new THREE.Vector2(-6, -3);
-const v2 = new THREE.Vector2(-1, -3);
-const v3 = new THREE.Vector2(0.8, 2.5);
-const v4 = new THREE.Vector2(-6, 2.5);
+const v1 = new THREE.Vector2(-2, -1);
+const v2 = new THREE.Vector2(2, -1);
+const v3 = new THREE.Vector2(2, 1);
+const v4 = new THREE.Vector2(-2, 1);
 
-const v5 = new THREE.Vector2(-0.8, -3);
-const v6 = new THREE.Vector2(6, -3)
-const v7 = new THREE.Vector2(6, 2.5);
-const v8 = new THREE.Vector2(1, 2.5)
 
 const points = [v1, v2, v3, v4];
-const points2 = [v5, v6, v7, v8];
+
 
 const skel = new SkeletonLoader(points);
 scene.add(skel);
-const skel2 = new SkeletonLoader(points2);
-scene.add(skel2);
 
 
-/**
+window.onresize = function () {
+
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+
+  renderer.setSize( window.innerWidth, window.innerHeight );
+
+};
+
+
 const manager = new THREE.LoadingManager();
 manager.onStart = function (url, itemsLoaded, itemsTotal) {
 
@@ -63,7 +67,6 @@ let textas;
 manager.onLoad = function () {
   scene.add(g1);
   skel.visible = false;
-  skel2.visible = false;
   const scaleTween = new TWEEN.Tween(g1.scale)
     .to({ x: 1, y: 1, z: 1 }, 800) // Scale to 100% over 2 seconds
     .easing(TWEEN.Easing.Quadratic.Out) // Use quadratic easing for smoother transition
@@ -109,7 +112,7 @@ loader2.load("/Bangers_Regular.json", (font) => {
 
   const textGeometry = new TextGeometry(text, {
     font: font,
-    size: 0.3,
+    size: 0.2,
     height: 0.01,
   });
 
@@ -125,7 +128,6 @@ loader2.load("/Bangers_Regular.json", (font) => {
   textas.rotation.z = angle;
   g1.add(textas);
 });
-*/
 
 const light = new THREE.AmbientLight(0x404040, 5);
 scene.add(light);
@@ -134,7 +136,6 @@ function animate() {
   requestAnimationFrame(animate);
 
   skel.update(clock);
-  skel2.update(clock);
 
   renderer.render(scene, camera);
 

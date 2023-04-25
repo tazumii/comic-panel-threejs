@@ -9,8 +9,10 @@ export default class SkeletonLoader extends THREE.Object3D {
     super();
     this.vectors = vectors;
 
+    this.group = new THREE.Group();
     this.mesh();
     this.outline();
+    this.add(this.group);
   }
 
   mesh() {
@@ -53,7 +55,7 @@ export default class SkeletonLoader extends THREE.Object3D {
     });
     this.object = new THREE.Mesh(geometry, material);
 
-    this.add(this.object)
+    this.group.add(this.object);
   }
 
   outline() {
@@ -67,7 +69,7 @@ export default class SkeletonLoader extends THREE.Object3D {
     });
 
     const outline = new Line2(outlineGeo, outlineMat);
-    this.add(outline);
+    this.group.add(outline);
   }
 
   update(clock) {
