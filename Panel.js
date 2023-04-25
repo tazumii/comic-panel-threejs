@@ -1,8 +1,9 @@
-import earcut from "earcut";
 import * as THREE from "three";
 import { LineGeometry } from "three/examples/jsm/lines/LineGeometry";
 import { LineMaterial } from "three/examples/jsm/lines/LineMaterial";
+import { Line2 } from "three/examples/jsm/lines/Line2.js";
 import Polygon from "./polygon";
+import { encloseVectors } from "./utils";
 
 export default class Panel extends THREE.Object3D {
   constructor(points, inset) {
@@ -12,7 +13,7 @@ export default class Panel extends THREE.Object3D {
     const insetPoly = Polygon.inset(poly, inset);
     const geometry = createGeometry(poly, insetPoly);
 
-    const panelGeo = new THREE.BufferGeometry({});
+    const panelGeo = new THREE.BufferGeometry();
     panelGeo.setAttribute(
       "position",
       new THREE.BufferAttribute(geometry.vertices, 3)
@@ -41,10 +42,10 @@ export default class Panel extends THREE.Object3D {
 
     this.add(panelMesh);
 
-    const outerLine = new LineGeometry();
-    const innerLine = new LineGeometry();
-    outerLine.setPositions(outline(poly.vertices));
-    innerLine.setPositions(outline(insetPoly.vertices));
+    const outerLineGeo = new LineGeometry();
+    const innerLineGeo = new LineGeometry();
+    outerLineGeo.setPositions(encloseVectors(poly.vertices));
+    innerLineGeo.setPositions(encloseVectors(insetPoly.vertices));
 
     const lineMat = new LineMaterial({
       color: "black",
@@ -53,20 +54,26 @@ export default class Panel extends THREE.Object3D {
       depthTest: false,
     });
 
-    
+    const outerLine = new Line2(outerLineGeo, lineMat);
+    const innerLine = new Line2(innerLineGeo, lineMat);
 
 
+    const outlines = new THREE.Group();
+    outlines.add(outerLine);
+    outlines.add(innerLine);
+    outlines.renderOrder = 2;
+
+    this.add(outlines)
   }
 }
 
 function createGeometry(polygon, paddingPolygon) {
   const vertices = verticesArray(polygon.vertices, paddingPolygon.vertices);
   const outlineIndices = indicesArray(polygon.vertices);
-  const shapeIndices = Polygon.triangulate(paddingPolygon.vertices, null, 3)
+  const shapeIndices = Polygon.triangulate(paddingPolygon.vertices, null, 3);
   for (let i = 0; i < shapeIndices.length; i++) {
     shapeIndices[i] = shapeIndices[i] * 2 + 1;
   }
-
 
   const indices = new Uint16Array(outlineIndices.length + shapeIndices.length);
   indices.set(outlineIndices);
@@ -112,20 +119,3 @@ function indicesArray(vertices) {
 
   return indices;
 }
-
-function outline(vertices) {
-  const positions = [];
-
-  for (let i = 0; i < vertices.length; i++) {
-    const vertex = vertices[i];
-    positions.push(vertex.x, vertex.y, 0);
-  }
-
-  if (vertices.length > 0) {
-    const firstVertex = vertices[0];
-    positions.push(firstVertex.x, firstVertex.y, 0);
-  }
-
-  return positions;
-}
-
