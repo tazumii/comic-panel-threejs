@@ -48,6 +48,7 @@ export default class SkeletonLoader extends THREE.Object3D {
 
     const material = new THREE.ShaderMaterial({
       vertexShader: vertexShader,
+      wireframe: false,
       fragmentShader: fragmentShader,
       uniforms: {
         time: { value: 0 },

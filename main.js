@@ -29,8 +29,10 @@ container.appendChild( renderer.domElement );
 
 clock = new THREE.Clock();
 
-const v1 = new THREE.Vector2(-2, -1);
-const v2 = new THREE.Vector2(2, -1);
+
+
+const v1 = new THREE.Vector2(-3, -1);
+const v2 = new THREE.Vector2(1.5, -1);
 const v3 = new THREE.Vector2(2, 1);
 const v4 = new THREE.Vector2(-2, 1);
 
